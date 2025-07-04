@@ -7,15 +7,13 @@ import matplotlib.font_manager as fm
 import os
 
 # --- 한글 폰트 설정 ---
-font_path = os.path.join(os.path.dirname(__file__), "NanumGothic.ttf")
+font_path = os.path.join(os.path.dirname(__file__), 'NanumGothicCoding.ttf')
 if os.path.exists(font_path):
-    font_prop = fm.FontProperties(fname=font_path)
-    plt.rcParams['font.family'] = font_prop.get_name()
-    st.success(f"✅ 한글 폰트 설정 완료: {font_prop.get_name()}")
+    nanum_font = fm.FontProperties(fname=font_path)
+    plt.rcParams['font.family'] = nanum_font.get_name()
+    plt.rcParams['axes.unicode_minus'] = False
 else:
-    st.warning("❗️NanumGothic.ttf 파일이 없습니다. 한글이 깨질 수 있습니다.")
-
-plt.rcParams['axes.unicode_minus'] = False
+    st.warning("❗️NanumGothicCoding.ttf 파일이 없습니다. 한글이 깨질 수 있습니다.")
 
 # --- 데이터 업로드 및 전처리 함수 ---
 def load_and_preprocess_data(uploaded_file):
@@ -69,11 +67,8 @@ if not df.empty:
     display_df = df[['지역', '평균_통행_속도', '대중교통_노선_수', '교통사고_건수_10만명당', '교통_환경_점수']] \
         .sort_values(by='교통_환경_점수', ascending=False).reset_index(drop=True)
     display_df.insert(1, '순위', np.arange(1, len(display_df) + 1))
-    st.dataframe(display_df.style.format({
-        '평균_통행_속도': "{:.1f}", 
-        '교통사고_건수_10만명당': "{:.1f}", 
-        '교통_환경_점수': "{:.2f}"
-    }), use_container_width=True, hide_index=True)
+    st.dataframe(display_df.style.format({'평균_통행_속도': "{:.1f}", '교통사고_건수_10만명당': "{:.1f}", '교통_환경_점수': "{:.2f}"}),
+                 use_container_width=True, hide_index=True)
 
     # --- 그래프 시각화 ---
     st.markdown("### 📈 지역별 교통 지표 시각화")
@@ -106,8 +101,8 @@ if not df.empty:
     st.markdown("---")
     st.subheader("🏠 내 거주 지역 비교")
 
-    all_locations = ['선택'] + df['지역'].tolist()
-    user_location = st.selectbox("📍 거주 지역을 선택하세요:", options=all_locations)
+    unique_locations = sorted(df['지역'].unique())
+    user_location = st.selectbox("📍 거주 지역을 선택하세요:", options=["선택"] + unique_locations)
 
     if user_location != '선택':
         user_data = df[df['지역'] == user_location].iloc[0]
@@ -116,7 +111,6 @@ if not df.empty:
         st.markdown(f"### ✅ **{user_location}** 지역 분석 결과")
         st.markdown(f"**교통 환경 점수**: {user_data['교통_환경_점수']:.2f} (평균: {gimpo_avg['교통_환경_점수']:.2f})")
 
-        # 비교 상세
         for col, desc in {
             '평균_통행_속도': 'km/h',
             '대중교통_노선_수': '개',
