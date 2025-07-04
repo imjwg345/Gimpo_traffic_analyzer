@@ -4,30 +4,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.font_manager as fm
-import platform
 import os
 
-# ✅ 한글 폰트 설정 (운영체제별 자동 적용)
-def set_korean_font():
-    system = platform.system()
-    font_path = ""
+# --- 한글 폰트 설정 ---
+font_path = os.path.join(os.path.dirname(__file__), "NanumGothic.ttf")
+if os.path.exists(font_path):
+    font_prop = fm.FontProperties(fname=font_path)
+    plt.rcParams['font.family'] = font_prop.get_name()
+    st.success(f"✅ 한글 폰트 설정 완료: {font_prop.get_name()}")
+else:
+    st.warning("❗️NanumGothic.ttf 파일이 없습니다. 한글이 깨질 수 있습니다.")
 
-    if system == "Windows":
-        font_path = "C:/Windows/Fonts/malgun.ttf"
-    elif system == "Darwin":  # macOS
-        font_path = "/System/Library/Fonts/AppleSDGothicNeo.ttc"
-    else:  # Linux (e.g. Streamlit Cloud or Docker)
-        font_path = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
-        # 폰트 없을 경우 안내
-        if not os.path.exists(font_path):
-            st.warning("❗️NanumGothic 폰트가 설치되어 있지 않습니다. 한글이 깨질 수 있습니다.")
-            return
-
-    font_name = fm.FontProperties(fname=font_path).get_name()
-    plt.rc('font', family=font_name)
-    plt.rcParams['axes.unicode_minus'] = False
-
-set_korean_font()  # 👈 반드시 초기 실행 시 호출
+plt.rcParams['axes.unicode_minus'] = False
 
 # --- 데이터 업로드 및 전처리 함수 ---
 def load_and_preprocess_data(uploaded_file):
@@ -81,8 +69,11 @@ if not df.empty:
     display_df = df[['지역', '평균_통행_속도', '대중교통_노선_수', '교통사고_건수_10만명당', '교통_환경_점수']] \
         .sort_values(by='교통_환경_점수', ascending=False).reset_index(drop=True)
     display_df.insert(1, '순위', np.arange(1, len(display_df) + 1))
-    st.dataframe(display_df.style.format({'평균_통행_속도': "{:.1f}", '교통사고_건수_10만명당': "{:.1f}", '교통_환경_점수': "{:.2f}"}),
-                 use_container_width=True, hide_index=True)
+    st.dataframe(display_df.style.format({
+        '평균_통행_속도': "{:.1f}", 
+        '교통사고_건수_10만명당': "{:.1f}", 
+        '교통_환경_점수': "{:.2f}"
+    }), use_container_width=True, hide_index=True)
 
     # --- 그래프 시각화 ---
     st.markdown("### 📈 지역별 교통 지표 시각화")
