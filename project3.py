@@ -3,10 +3,31 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import matplotlib.font_manager as fm
+import platform
+import os
 
-# --- 한글 폰트 설정 (윈도우용) ---
-plt.rcParams['font.family'] = 'Malgun Gothic'
-plt.rcParams['axes.unicode_minus'] = False
+# ✅ 한글 폰트 설정 (운영체제별 자동 적용)
+def set_korean_font():
+    system = platform.system()
+    font_path = ""
+
+    if system == "Windows":
+        font_path = "C:/Windows/Fonts/malgun.ttf"
+    elif system == "Darwin":  # macOS
+        font_path = "/System/Library/Fonts/AppleSDGothicNeo.ttc"
+    else:  # Linux (e.g. Streamlit Cloud or Docker)
+        font_path = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
+        # 폰트 없을 경우 안내
+        if not os.path.exists(font_path):
+            st.warning("❗️NanumGothic 폰트가 설치되어 있지 않습니다. 한글이 깨질 수 있습니다.")
+            return
+
+    font_name = fm.FontProperties(fname=font_path).get_name()
+    plt.rc('font', family=font_name)
+    plt.rcParams['axes.unicode_minus'] = False
+
+set_korean_font()  # 👈 반드시 초기 실행 시 호출
 
 # --- 데이터 업로드 및 전처리 함수 ---
 def load_and_preprocess_data(uploaded_file):
